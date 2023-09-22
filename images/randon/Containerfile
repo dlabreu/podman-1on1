@@ -1,0 +1,11 @@
+# Use Fedora as the base image
+FROM fedora:latest
+
+# Copy file.txt (the file with the list of names) into the container
+COPY file.txt /your_file.txt
+
+# Install shuf (needed for randomization)
+RUN dnf -y update && dnf -y install coreutils cowsay
+
+# Run the command to display a random name from the file
+CMD ["sh", "-c", "cat /your_file.txt | shuf -n 1 | cowsay"]
