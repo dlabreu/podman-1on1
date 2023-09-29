@@ -97,7 +97,7 @@ If you have any questions or need clarification on any course materials, please 
 
   
 
-- Instructor Daniel Abreu: dlabreu@redhat.com
+- Instructor Daniel Abreu: dleitede@redhat.com
 
   
 
