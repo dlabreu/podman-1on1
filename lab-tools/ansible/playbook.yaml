@@ -1,0 +1,64 @@
+---
+- name: Install Cockpit and Podman, and set password for ec2-user
+  hosts: all
+  become: true
+  vars:
+    repo_dir: "/home/ec2-user/class"
+    repo_url: "https://github.com/dlabreu/podman-1on1.git" # Replace with your URL
+  
+  tasks:
+    - name: Update repositories
+      dnf:
+        name: '*'
+        state: latest
+
+    - name: Install Cockpit and Podman
+      dnf:
+        name: ['cockpit','cockpit-podman', 'podman', 'git']
+        state: present
+    
+    - name: Check firewalld service status
+      systemd:
+        name: firewalld
+        state: started
+      register: firewalld_status
+      ignore_errors: true
+    
+    - name: Add Cockpit rule only if firewalld is installed
+      firewalld:
+        service: cockpit
+        zone: public
+        permanent: yes
+        state: enabled
+        immediate: yes
+      when: firewalld_status is succeeded
+
+    - name: Start and enable Cockpit service
+      service:
+        name: cockpit.socket
+        state: started
+        enabled: yes
+
+    - name: Start and enable Podman service
+      service:
+        name: podman
+        state: started
+        enabled: yes
+
+    - name: Set password for ec2-user
+      user:
+        name: ec2-user
+        update_password: always
+        password: "{{ '1qaz2wsx' | password_hash('sha512') }}"
+
+    - name: Create directory for repository
+      file:
+        path: "{{ repo_dir }}"
+        state: directory
+        mode: 0755
+
+    - name: Clone Git repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_dir }}"
+        update: no
